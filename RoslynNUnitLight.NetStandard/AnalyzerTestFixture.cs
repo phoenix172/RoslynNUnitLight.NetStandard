@@ -35,6 +35,27 @@ namespace RoslynNUnitLight
             HasDiagnostic(document, span, diagnosticId);
         }
 
+        protected void HasDiagnostic(string code, int line, string diagnosticId)
+        {
+            var document = TestHelpers.GetDocument(code, this.LanguageName);
+            HasDiagnostic(document, line, diagnosticId);
+        }
+
+        private void HasDiagnostic(Document document, int line, string diagnosticId)
+        {
+            var zeroBaseLine = line - 1;
+            var diagnostic = this.GetDiagnostics(document).FirstOrDefault(x =>
+            {
+                var location = x.Location.GetLineSpan();
+                return x.Id == diagnosticId &&
+                        x.Location.IsInSource &&
+                        location.StartLinePosition.Line <= zeroBaseLine &&
+                        location.EndLinePosition.Line >= zeroBaseLine;
+            });
+
+            Assert.IsNotNull(diagnostic, $"There is no diagnostic {diagnosticId} at line {line}");
+        }
+
         protected void HasDiagnostic(Document document, TextSpan span, string diagnosticId)
         {
             var diagnostics = GetDiagnostics(document);
